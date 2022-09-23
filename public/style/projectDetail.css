@@ -1,0 +1,8 @@
+.main-container {
+	min-height: 120vh !important;
+}
+
+.project-header {
+	height: 350px;
+	width: 100%;
+}
