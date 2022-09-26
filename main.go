@@ -5,12 +5,21 @@ import (
 	"fmt"
 	"html/template"
 	"mvcweb/connection"
+	"mvcweb/helper"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type ProjectData struct {
+	Name,Description,Image,Duration string
+	StartDate,EndDate pgtype.Date
+	Technologies[]string	
+}
+
+var projects []ProjectData 
 
 
 
@@ -56,17 +65,20 @@ func getHome(w http.ResponseWriter, r *http.Request) {
 
 	var dataResult []ProjectData
 
+	var project ProjectData
 	for data.Next() {
-		var project = ProjectData{}
 
 		var err = data.Scan(&project.Name, &project.StartDate, &project.EndDate, &project.Description, &project.Technologies, &project.Image)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
-
+		
+		project.Duration = helper.GetDuration(project.StartDate.Time.Format("2006-01-02"), project.EndDate.Time.Format("2006-01-02"))
 		dataResult = append(dataResult, project)
 	}
+	
+
 	
 	var view, templErr = template.ParseFiles("views/index.html")	
 	if err != nil {
@@ -97,31 +109,8 @@ func getProjectDetail(w http.ResponseWriter, r *http.Request) {
 
 }
 
-type ProjectData struct {
-	Name,Description,Image string
-	StartDate,EndDate pgtype.Date
-	Technologies[]string	
-}
-
-var projects []ProjectData 
 func postAddProject(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	
-	// name := r.PostForm.Get("name")
-	// description := r.PostForm.Get("description")
-	// startDate := r.PostForm.Get("start-date")
-	// endDate := r.PostForm.Get("end-date")
-	// techlist := r.PostForm["checkbox"]
-
-	// var arrData = ProjectData {
-	// 	Name: name,
-	// 	Description: description,
-	// 	StartDate: startDate,
-	// 	EndDate: endDate,
-	// 	Checkbox: techlist,
-	// }
-
-	// projects = append(projects, arrData)
 	
 
 	http.Redirect(w,r,"/form-add-project", http.StatusFound)
